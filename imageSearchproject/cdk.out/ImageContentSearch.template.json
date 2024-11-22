@@ -1,0 +1,2132 @@
+{
+ "Resources": {
+  "ICSIMAGES9B323B5B": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "CorsConfiguration": {
+     "CorsRules": [
+      {
+       "AllowedMethods": [
+        "POST"
+       ],
+       "AllowedOrigins": [
+        "*"
+       ]
+      }
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGES/Resource"
+   }
+  },
+  "ICSIMAGESNotifications3D771EB9": {
+   "Type": "Custom::S3BucketNotifications",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "BucketNotificationsHandler050a0587b7544547bf325f094a3db8347ECC3691",
+      "Arn"
+     ]
+    },
+    "BucketName": {
+     "Ref": "ICSIMAGES9B323B5B"
+    },
+    "NotificationConfiguration": {
+     "LambdaFunctionConfigurations": [
+      {
+       "Events": [
+        "s3:ObjectCreated:*"
+       ],
+       "Filter": {
+        "Key": {
+         "FilterRules": [
+          {
+           "Name": "prefix",
+           "Value": "new/"
+          }
+         ]
+        }
+       },
+       "LambdaFunctionArn": {
+        "Fn::GetAtt": [
+         "ICSIMAGEMASSAGEC938CD01",
+         "Arn"
+        ]
+       }
+      }
+     ]
+    },
+    "Managed": true
+   },
+   "DependsOn": [
+    "ICSIMAGESAllowBucketNotificationsToImageContentSearchICSIMAGEMASSAGE0E61A1DAD55D2049"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGES/Notifications/Resource"
+   }
+  },
+  "ICSIMAGESAllowBucketNotificationsToImageContentSearchICSIMAGEMASSAGE0E61A1DAD55D2049": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ICSIMAGEMASSAGEC938CD01",
+      "Arn"
+     ]
+    },
+    "Principal": "s3.amazonaws.com",
+    "SourceAccount": {
+     "Ref": "AWS::AccountId"
+    },
+    "SourceArn": {
+     "Fn::GetAtt": [
+      "ICSIMAGES9B323B5B",
+      "Arn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGES/AllowBucketNotificationsToImageContentSearchICSIMAGEMASSAGE0E61A1DA"
+   }
+  },
+  "ICSIMAGESDEADLETTERQUEUE5A772CBE": {
+   "Type": "AWS::SQS::Queue",
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGES_DEADLETTER_QUEUE/Resource"
+   }
+  },
+  "ICSIMAGESQUEUED36467EC": {
+   "Type": "AWS::SQS::Queue",
+   "Properties": {
+    "RedrivePolicy": {
+     "deadLetterTargetArn": {
+      "Fn::GetAtt": [
+       "ICSIMAGESDEADLETTERQUEUE5A772CBE",
+       "Arn"
+      ]
+     },
+     "maxReceiveCount": 3
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGES_QUEUE/Resource"
+   }
+  },
+  "ICSAPIGATEWAY176EA487": {
+   "Type": "AWS::ApiGateway::RestApi",
+   "Properties": {
+    "Name": "ImageContentSearchApiGateway"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Resource"
+   }
+  },
+  "ICSAPIGATEWAYCloudWatchRoleFF4E4DEC": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "apigateway.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+       ]
+      ]
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/CloudWatchRole/Resource"
+   }
+  },
+  "ICSAPIGATEWAYAccountF7F23D9A": {
+   "Type": "AWS::ApiGateway::Account",
+   "Properties": {
+    "CloudWatchRoleArn": {
+     "Fn::GetAtt": [
+      "ICSAPIGATEWAYCloudWatchRoleFF4E4DEC",
+      "Arn"
+     ]
+    }
+   },
+   "DependsOn": [
+    "ICSAPIGATEWAY176EA487"
+   ],
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Account"
+   }
+  },
+  "ICSAPIGATEWAYDeploymentB02CC6EFad87a1d8e1bd42525c1ac05cfbe447a1": {
+   "Type": "AWS::ApiGateway::Deployment",
+   "Properties": {
+    "Description": "Automatically created by the RestApi construct",
+    "RestApiId": {
+     "Ref": "ICSAPIGATEWAY176EA487"
+    }
+   },
+   "DependsOn": [
+    "ICSAPIGATEWAYsearchOPTIONS5EBC9226",
+    "ICSAPIGATEWAYsearchPOST8A027558",
+    "ICSAPIGATEWAYsearchFB1E1A5C",
+    "ICSAPIGATEWAYsignedUrlGETCFF30045",
+    "ICSAPIGATEWAYsignedUrlOPTIONS6E3F44FF",
+    "ICSAPIGATEWAYsignedUrlB7F567EE",
+    "ICSAPIGATEWAYwebGET74450C32",
+    "ICSAPIGATEWAYwebOPTIONSDB67D316",
+    "ICSAPIGATEWAYweb41710FF5"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Deployment/Resource"
+   }
+  },
+  "ICSAPIGATEWAYDeploymentStageprodE92AB5E6": {
+   "Type": "AWS::ApiGateway::Stage",
+   "Properties": {
+    "DeploymentId": {
+     "Ref": "ICSAPIGATEWAYDeploymentB02CC6EFad87a1d8e1bd42525c1ac05cfbe447a1"
+    },
+    "RestApiId": {
+     "Ref": "ICSAPIGATEWAY176EA487"
+    },
+    "StageName": "prod"
+   },
+   "DependsOn": [
+    "ICSAPIGATEWAYAccountF7F23D9A"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/DeploymentStage.prod/Resource"
+   }
+  },
+  "ICSAPIGATEWAYweb41710FF5": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "ICSAPIGATEWAY176EA487",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "web",
+    "RestApiId": {
+     "Ref": "ICSAPIGATEWAY176EA487"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/web/Resource"
+   }
+  },
+  "ICSAPIGATEWAYwebGETApiPermissionImageContentSearchICSAPIGATEWAY49425188GETweb5E56DA09": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ICSGETLANDINGPAGE9074A05D",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:eu-central-1:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "ICSAPIGATEWAY176EA487"
+       },
+       "/",
+       {
+        "Ref": "ICSAPIGATEWAYDeploymentStageprodE92AB5E6"
+       },
+       "/GET/web"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/web/GET/ApiPermission.ImageContentSearchICSAPIGATEWAY49425188.GET..web"
+   }
+  },
+  "ICSAPIGATEWAYwebGETApiPermissionTestImageContentSearchICSAPIGATEWAY49425188GETwebC4D89A6E": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ICSGETLANDINGPAGE9074A05D",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:eu-central-1:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "ICSAPIGATEWAY176EA487"
+       },
+       "/test-invoke-stage/GET/web"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/web/GET/ApiPermission.Test.ImageContentSearchICSAPIGATEWAY49425188.GET..web"
+   }
+  },
+  "ICSAPIGATEWAYwebGET74450C32": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Origin": "'*'"
+       },
+       "StatusCode": "200"
+      }
+     ],
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:eu-central-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ICSGETLANDINGPAGE9074A05D",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Origin": true
+      },
+      "StatusCode": "200"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "ICSAPIGATEWAYweb41710FF5"
+    },
+    "RestApiId": {
+     "Ref": "ICSAPIGATEWAY176EA487"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/web/GET/Resource"
+   }
+  },
+  "ICSAPIGATEWAYwebOPTIONSDB67D316": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,OPTIONS'"
+       },
+       "StatusCode": "200"
+      }
+     ],
+     "PassthroughBehavior": "WHEN_NO_MATCH",
+     "RequestTemplates": {
+      "application/json": "{\"statusCode\":200}"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Allow-Origin": true
+      },
+      "StatusCode": "200"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "ICSAPIGATEWAYweb41710FF5"
+    },
+    "RestApiId": {
+     "Ref": "ICSAPIGATEWAY176EA487"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/web/OPTIONS/Resource"
+   }
+  },
+  "ICSAPIGATEWAYsignedUrlB7F567EE": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "ICSAPIGATEWAY176EA487",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "signedUrl",
+    "RestApiId": {
+     "Ref": "ICSAPIGATEWAY176EA487"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/signedUrl/Resource"
+   }
+  },
+  "ICSAPIGATEWAYsignedUrlGETApiPermissionImageContentSearchICSAPIGATEWAY49425188GETsignedUrl3155CCCC": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ICSGETSIGNEDURL35AB5BD9",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:eu-central-1:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "ICSAPIGATEWAY176EA487"
+       },
+       "/",
+       {
+        "Ref": "ICSAPIGATEWAYDeploymentStageprodE92AB5E6"
+       },
+       "/GET/signedUrl"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/signedUrl/GET/ApiPermission.ImageContentSearchICSAPIGATEWAY49425188.GET..signedUrl"
+   }
+  },
+  "ICSAPIGATEWAYsignedUrlGETApiPermissionTestImageContentSearchICSAPIGATEWAY49425188GETsignedUrl0C5D261F": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ICSGETSIGNEDURL35AB5BD9",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:eu-central-1:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "ICSAPIGATEWAY176EA487"
+       },
+       "/test-invoke-stage/GET/signedUrl"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/signedUrl/GET/ApiPermission.Test.ImageContentSearchICSAPIGATEWAY49425188.GET..signedUrl"
+   }
+  },
+  "ICSAPIGATEWAYsignedUrlGETCFF30045": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "COGNITO_USER_POOLS",
+    "AuthorizerId": {
+     "Ref": "ICSAPIGATEWAYGETSIGNEDURLAUTHORIZER"
+    },
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Origin": "'*'"
+       },
+       "StatusCode": "200"
+      }
+     ],
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:eu-central-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ICSGETSIGNEDURL35AB5BD9",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Origin": true
+      },
+      "StatusCode": "200"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "ICSAPIGATEWAYsignedUrlB7F567EE"
+    },
+    "RestApiId": {
+     "Ref": "ICSAPIGATEWAY176EA487"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/signedUrl/GET/Resource"
+   }
+  },
+  "ICSAPIGATEWAYsignedUrlOPTIONS6E3F44FF": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,OPTIONS'"
+       },
+       "StatusCode": "200"
+      }
+     ],
+     "PassthroughBehavior": "WHEN_NO_MATCH",
+     "RequestTemplates": {
+      "application/json": "{\"statusCode\":200}"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Allow-Origin": true
+      },
+      "StatusCode": "200"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "ICSAPIGATEWAYsignedUrlB7F567EE"
+    },
+    "RestApiId": {
+     "Ref": "ICSAPIGATEWAY176EA487"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/signedUrl/OPTIONS/Resource"
+   }
+  },
+  "ICSAPIGATEWAYsearchFB1E1A5C": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "ICSAPIGATEWAY176EA487",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "search",
+    "RestApiId": {
+     "Ref": "ICSAPIGATEWAY176EA487"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/search/Resource"
+   }
+  },
+  "ICSAPIGATEWAYsearchOPTIONS5EBC9226": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,OPTIONS'"
+       },
+       "StatusCode": "200"
+      }
+     ],
+     "PassthroughBehavior": "WHEN_NO_MATCH",
+     "RequestTemplates": {
+      "application/json": "{\"statusCode\":200}"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Allow-Origin": true
+      },
+      "StatusCode": "200"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "ICSAPIGATEWAYsearchFB1E1A5C"
+    },
+    "RestApiId": {
+     "Ref": "ICSAPIGATEWAY176EA487"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/search/OPTIONS/Resource"
+   }
+  },
+  "ICSAPIGATEWAYsearchPOSTApiPermissionImageContentSearchICSAPIGATEWAY49425188POSTsearchDDB1A34A": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ICSIMAGEDATA596A15AA",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:eu-central-1:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "ICSAPIGATEWAY176EA487"
+       },
+       "/",
+       {
+        "Ref": "ICSAPIGATEWAYDeploymentStageprodE92AB5E6"
+       },
+       "/POST/search"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/search/POST/ApiPermission.ImageContentSearchICSAPIGATEWAY49425188.POST..search"
+   }
+  },
+  "ICSAPIGATEWAYsearchPOSTApiPermissionTestImageContentSearchICSAPIGATEWAY49425188POSTsearch4713DB00": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ICSIMAGEDATA596A15AA",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:eu-central-1:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "ICSAPIGATEWAY176EA487"
+       },
+       "/test-invoke-stage/POST/search"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/search/POST/ApiPermission.Test.ImageContentSearchICSAPIGATEWAY49425188.POST..search"
+   }
+  },
+  "ICSAPIGATEWAYsearchPOST8A027558": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "COGNITO_USER_POOLS",
+    "AuthorizerId": {
+     "Ref": "ICSAPIGATEWAYIMAGESEARCHAUTHORIZER"
+    },
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Origin": "'*'"
+       },
+       "StatusCode": "200"
+      }
+     ],
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:eu-central-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ICSIMAGEDATA596A15AA",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Origin": true
+      },
+      "StatusCode": "200"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "ICSAPIGATEWAYsearchFB1E1A5C"
+    },
+    "RestApiId": {
+     "Ref": "ICSAPIGATEWAY176EA487"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY/Default/search/POST/Resource"
+   }
+  },
+  "ICSGETLANDINGPAGEServiceRole59182AB9": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_GET_LANDING_PAGE/ServiceRole/Resource"
+   }
+  },
+  "ICSGETLANDINGPAGE9074A05D": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-eu-central-1"
+     },
+     "S3Key": "f51c423df535205523f8984a8b7d135fc1e9ef4cbda00bb691e858fe597e05d4.zip"
+    },
+    "FunctionName": "ICS_GET_LANDING_PAGE",
+    "Handler": "main.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "ICSGETLANDINGPAGEServiceRole59182AB9",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.10"
+   },
+   "DependsOn": [
+    "ICSGETLANDINGPAGEServiceRole59182AB9"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_GET_LANDING_PAGE/Resource",
+    "aws:asset:path": "asset.f51c423df535205523f8984a8b7d135fc1e9ef4cbda00bb691e858fe597e05d4",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "ICSUSERSPOOLF6FBAE92": {
+   "Type": "AWS::Cognito::UserPool",
+   "Properties": {
+    "AccountRecoverySetting": {
+     "RecoveryMechanisms": [
+      {
+       "Name": "verified_phone_number",
+       "Priority": 1
+      },
+      {
+       "Name": "verified_email",
+       "Priority": 2
+      }
+     ]
+    },
+    "AdminCreateUserConfig": {
+     "AllowAdminCreateUserOnly": false
+    },
+    "AutoVerifiedAttributes": [
+     "email"
+    ],
+    "EmailVerificationMessage": "The verification code to your new account is {####}",
+    "EmailVerificationSubject": "Verify your new account",
+    "Schema": [
+     {
+      "Mutable": true,
+      "Name": "email",
+      "Required": true
+     }
+    ],
+    "SmsVerificationMessage": "The verification code to your new account is {####}",
+    "VerificationMessageTemplate": {
+     "DefaultEmailOption": "CONFIRM_WITH_CODE",
+     "EmailMessage": "The verification code to your new account is {####}",
+     "EmailSubject": "Verify your new account",
+     "SmsMessage": "The verification code to your new account is {####}"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_USERS_POOL/Resource"
+   }
+  },
+  "ICSUSERSPOOLAPPCLIENT": {
+   "Type": "AWS::Cognito::UserPoolClient",
+   "Properties": {
+    "AllowedOAuthFlows": [
+     "implicit"
+    ],
+    "AllowedOAuthFlowsUserPoolClient": true,
+    "AllowedOAuthScopes": [
+     "phone",
+     "email",
+     "openid",
+     "profile"
+    ],
+    "CallbackURLs": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "https://",
+        {
+         "Ref": "ICSAPIGATEWAY176EA487"
+        },
+        ".execute-api.eu-central-1.",
+        {
+         "Ref": "AWS::URLSuffix"
+        },
+        "/",
+        {
+         "Ref": "ICSAPIGATEWAYDeploymentStageprodE92AB5E6"
+        },
+        "/web"
+       ]
+      ]
+     }
+    ],
+    "ExplicitAuthFlows": [
+     "ALLOW_REFRESH_TOKEN_AUTH"
+    ],
+    "SupportedIdentityProviders": [
+     "COGNITO"
+    ],
+    "UserPoolId": {
+     "Ref": "ICSUSERSPOOLF6FBAE92"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_USERS_POOL_APP_CLIENT"
+   }
+  },
+  "ICSUSERSPOOLDOMAINFF1CF72E": {
+   "Type": "AWS::Cognito::UserPoolDomain",
+   "Properties": {
+    "Domain": "image-content-search-lums",
+    "UserPoolId": {
+     "Ref": "ICSUSERSPOOLF6FBAE92"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_USERS_POOL_DOMAIN/Resource"
+   }
+  },
+  "ICSGETSIGNEDURLServiceRole6B36B087": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_GET_SIGNED_URL/ServiceRole/Resource"
+   }
+  },
+  "ICSGETSIGNEDURLServiceRoleDefaultPolicy50E388DB": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging",
+        "s3:Abort*"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "ICSIMAGES9B323B5B",
+            "Arn"
+           ]
+          },
+          "/new/*"
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ICSGETSIGNEDURLServiceRoleDefaultPolicy50E388DB",
+    "Roles": [
+     {
+      "Ref": "ICSGETSIGNEDURLServiceRole6B36B087"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_GET_SIGNED_URL/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "ICSGETSIGNEDURL35AB5BD9": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-eu-central-1"
+     },
+     "S3Key": "53e37e93f4dbd7574b9050b0320acc6cf00db751629b392edcba43d437715350.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "ICS_IMAGES_BUCKET": {
+       "Ref": "ICSIMAGES9B323B5B"
+      },
+      "DEFAULT_SIGNEDURL_EXPIRY_SECONDS": "3600"
+     }
+    },
+    "FunctionName": "ICS_GET_SIGNED_URL",
+    "Handler": "main.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "ICSGETSIGNEDURLServiceRole6B36B087",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.10"
+   },
+   "DependsOn": [
+    "ICSGETSIGNEDURLServiceRoleDefaultPolicy50E388DB",
+    "ICSGETSIGNEDURLServiceRole6B36B087"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_GET_SIGNED_URL/Resource",
+    "aws:asset:path": "asset.53e37e93f4dbd7574b9050b0320acc6cf00db751629b392edcba43d437715350",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "ICSAPIGATEWAYGETSIGNEDURLAUTHORIZER": {
+   "Type": "AWS::ApiGateway::Authorizer",
+   "Properties": {
+    "IdentitySource": "method.request.header.Authorization",
+    "Name": "ICS_API_GATEWAY_GET_SIGNED_URL_AUTHORIZER",
+    "ProviderARNs": [
+     {
+      "Fn::GetAtt": [
+       "ICSUSERSPOOLF6FBAE92",
+       "Arn"
+      ]
+     }
+    ],
+    "RestApiId": {
+     "Ref": "ICSAPIGATEWAY176EA487"
+    },
+    "Type": "COGNITO_USER_POOLS"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY_GET_SIGNED_URL_AUTHORIZER"
+   }
+  },
+  "ICSIMAGEMASSAGEServiceRole82275B10": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_MASSAGE/ServiceRole/Resource"
+   }
+  },
+  "ICSIMAGEMASSAGEServiceRoleDefaultPolicyBC04A45A": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:DeleteObject*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging",
+        "s3:Abort*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ICSIMAGES9B323B5B",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ICSIMAGES9B323B5B",
+             "Arn"
+            ]
+           },
+           "/processed/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": "s3:DeleteObject*",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "ICSIMAGES9B323B5B",
+            "Arn"
+           ]
+          },
+          "/new/*"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ICSIMAGES9B323B5B",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ICSIMAGES9B323B5B",
+             "Arn"
+            ]
+           },
+           "/new/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "sqs:SendMessage",
+        "sqs:GetQueueAttributes",
+        "sqs:GetQueueUrl"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "ICSIMAGESQUEUED36467EC",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": [
+        "sqs:ReceiveMessage",
+        "sqs:ChangeMessageVisibility",
+        "sqs:GetQueueUrl",
+        "sqs:DeleteMessage",
+        "sqs:GetQueueAttributes"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "ICSIMAGESQUEUED36467EC",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ICSIMAGEMASSAGEServiceRoleDefaultPolicyBC04A45A",
+    "Roles": [
+     {
+      "Ref": "ICSIMAGEMASSAGEServiceRole82275B10"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_MASSAGE/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "ICSIMAGEMASSAGEC938CD01": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-eu-central-1"
+     },
+     "S3Key": "ce5eb911991212b00adbe1da0438bcf8407056e9fb13f7cb6dcf68aea40107bc.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "ICS_IMAGE_MASSAGE": {
+       "Fn::GetAtt": [
+        "ICSIMAGESQUEUED36467EC",
+        "QueueName"
+       ]
+      }
+     }
+    },
+    "FunctionName": "ICS_IMAGE_MASSAGE",
+    "Handler": "main.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "ICSIMAGEMASSAGEServiceRole82275B10",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.10",
+    "Timeout": 6
+   },
+   "DependsOn": [
+    "ICSIMAGEMASSAGEServiceRoleDefaultPolicyBC04A45A",
+    "ICSIMAGEMASSAGEServiceRole82275B10"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_MASSAGE/Resource",
+    "aws:asset:path": "asset.ce5eb911991212b00adbe1da0438bcf8407056e9fb13f7cb6dcf68aea40107bc",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/Resource"
+   }
+  },
+  "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:PutBucketNotification",
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36",
+    "Roles": [
+     {
+      "Ref": "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/DefaultPolicy/Resource"
+   }
+  },
+  "BucketNotificationsHandler050a0587b7544547bf325f094a3db8347ECC3691": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Description": "AWS CloudFormation handler for \"Custom::S3BucketNotifications\" resources (@aws-cdk/aws-s3)",
+    "Code": {
+     "ZipFile": "import boto3  # type: ignore\nimport json\nimport logging\nimport urllib.request\n\ns3 = boto3.client(\"s3\")\n\nEVENTBRIDGE_CONFIGURATION = 'EventBridgeConfiguration'\nCONFIGURATION_TYPES = [\"TopicConfigurations\", \"QueueConfigurations\", \"LambdaFunctionConfigurations\"]\n\ndef handler(event: dict, context):\n  response_status = \"SUCCESS\"\n  error_message = \"\"\n  try:\n    props = event[\"ResourceProperties\"]\n    notification_configuration = props[\"NotificationConfiguration\"]\n    managed = props.get('Managed', 'true').lower() == 'true'\n    stack_id = event['StackId']\n    old = event.get(\"OldResourceProperties\", {}).get(\"NotificationConfiguration\", {})\n    if managed:\n      config = handle_managed(event[\"RequestType\"], notification_configuration)\n    else:\n      config = handle_unmanaged(props[\"BucketName\"], stack_id, event[\"RequestType\"], notification_configuration, old)\n    s3.put_bucket_notification_configuration(Bucket=props[\"BucketName\"], NotificationConfiguration=config)\n  except Exception as e:\n    logging.exception(\"Failed to put bucket notification configuration\")\n    response_status = \"FAILED\"\n    error_message = f\"Error: {str(e)}. \"\n  finally:\n    submit_response(event, context, response_status, error_message)\n\ndef handle_managed(request_type, notification_configuration):\n  if request_type == 'Delete':\n    return {}\n  return notification_configuration\n\ndef handle_unmanaged(bucket, stack_id, request_type, notification_configuration, old):\n  def with_id(n):\n    n['Id'] = f\"{stack_id}-{hash(json.dumps(n, sort_keys=True))}\"\n    return n\n\n  external_notifications = {}\n  existing_notifications = s3.get_bucket_notification_configuration(Bucket=bucket)\n  for t in CONFIGURATION_TYPES:\n    if request_type == 'Update':\n        ids = [with_id(n) for n in old.get(t, [])]\n        old_incoming_ids = [n['Id'] for n in ids]\n        external_notifications[t] = [n for n in existing_notifications.get(t, []) if not n['Id'] in old_incoming_ids]\n    elif request_type == 'Create':\n        external_notifications[t] = [n for n in existing_notifications.get(t, [])]\n  if EVENTBRIDGE_CONFIGURATION in existing_notifications:\n    external_notifications[EVENTBRIDGE_CONFIGURATION] = existing_notifications[EVENTBRIDGE_CONFIGURATION]\n\n  if request_type == 'Delete':\n    return external_notifications\n\n  notifications = {}\n  for t in CONFIGURATION_TYPES:\n    external = external_notifications.get(t, [])\n    incoming = [with_id(n) for n in notification_configuration.get(t, [])]\n    notifications[t] = external + incoming\n\n  if EVENTBRIDGE_CONFIGURATION in notification_configuration:\n    notifications[EVENTBRIDGE_CONFIGURATION] = notification_configuration[EVENTBRIDGE_CONFIGURATION]\n  elif EVENTBRIDGE_CONFIGURATION in external_notifications:\n    notifications[EVENTBRIDGE_CONFIGURATION] = external_notifications[EVENTBRIDGE_CONFIGURATION]\n\n  return notifications\n\ndef submit_response(event: dict, context, response_status: str, error_message: str):\n  response_body = json.dumps(\n    {\n      \"Status\": response_status,\n      \"Reason\": f\"{error_message}See the details in CloudWatch Log Stream: {context.log_stream_name}\",\n      \"PhysicalResourceId\": event.get(\"PhysicalResourceId\") or event[\"LogicalResourceId\"],\n      \"StackId\": event[\"StackId\"],\n      \"RequestId\": event[\"RequestId\"],\n      \"LogicalResourceId\": event[\"LogicalResourceId\"],\n      \"NoEcho\": False,\n    }\n  ).encode(\"utf-8\")\n  headers = {\"content-type\": \"\", \"content-length\": str(len(response_body))}\n  try:\n    req = urllib.request.Request(url=event[\"ResponseURL\"], headers=headers, data=response_body, method=\"PUT\")\n    with urllib.request.urlopen(req) as response:\n      print(response.read().decode(\"utf-8\"))\n    print(\"Status code: \" + response.reason)\n  except Exception as e:\n      print(\"send(..) failed executing request.urlopen(..): \" + str(e))\n"
+    },
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.11",
+    "Timeout": 300
+   },
+   "DependsOn": [
+    "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36",
+    "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Resource"
+   }
+  },
+  "ICSIMAGEANALYSISServiceRole00046CC6": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_ANALYSIS/ServiceRole/Resource"
+   }
+  },
+  "ICSIMAGEANALYSISServiceRoleDefaultPolicy2BDD9404": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "sqs:ReceiveMessage",
+        "sqs:ChangeMessageVisibility",
+        "sqs:GetQueueUrl",
+        "sqs:DeleteMessage",
+        "sqs:GetQueueAttributes"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "ICSIMAGESQUEUED36467EC",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": [
+        "rekognition:DetectLabels",
+        "rekognition:DetectModerationLabels"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ICSIMAGES9B323B5B",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ICSIMAGES9B323B5B",
+             "Arn"
+            ]
+           },
+           "/processed/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": "events:PutEvents",
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ICSIMAGEANALYSISServiceRoleDefaultPolicy2BDD9404",
+    "Roles": [
+     {
+      "Ref": "ICSIMAGEANALYSISServiceRole00046CC6"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_ANALYSIS/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "ICSIMAGEANALYSISA2789013": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-eu-central-1"
+     },
+     "S3Key": "37c977c9b57c69edda9b20818569505e224955d4bfee82891eeac1f8c83962cb.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "ICS_IMAGES_BUCKET": {
+       "Ref": "ICSIMAGES9B323B5B"
+      },
+      "DEFAULT_MAX_CALL_ATTEMPTS": "5",
+      "REGION": {
+       "Ref": "AWS::Region"
+      },
+      "EVENT_BUS": {
+       "Ref": "ICSIMAGECONTENTBUS0FE76B53"
+      }
+     }
+    },
+    "FunctionName": "ICS_IMAGE_ANALYSIS",
+    "Handler": "main.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "ICSIMAGEANALYSISServiceRole00046CC6",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.10",
+    "Timeout": 10
+   },
+   "DependsOn": [
+    "ICSIMAGEANALYSISServiceRoleDefaultPolicy2BDD9404",
+    "ICSIMAGEANALYSISServiceRole00046CC6"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_ANALYSIS/Resource",
+    "aws:asset:path": "asset.37c977c9b57c69edda9b20818569505e224955d4bfee82891eeac1f8c83962cb",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "ICSIMAGEANALYSISSqsEventSourceImageContentSearchICSIMAGESQUEUE426445B0D0602E5C": {
+   "Type": "AWS::Lambda::EventSourceMapping",
+   "Properties": {
+    "BatchSize": 10,
+    "EventSourceArn": {
+     "Fn::GetAtt": [
+      "ICSIMAGESQUEUED36467EC",
+      "Arn"
+     ]
+    },
+    "FunctionName": {
+     "Ref": "ICSIMAGEANALYSISA2789013"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_ANALYSIS/SqsEventSource:ImageContentSearchICSIMAGESQUEUE426445B0/Resource"
+   }
+  },
+  "ICSDATABASESECRET3D2C45D3": {
+   "Type": "AWS::SecretsManager::Secret",
+   "Properties": {
+    "GenerateSecretString": {
+     "ExcludeCharacters": "/@\" \\'",
+     "ExcludePunctuation": true,
+     "GenerateStringKey": "password",
+     "RequireEachIncludedType": true,
+     "SecretStringTemplate": "{\"username\": \"dba\"}"
+    },
+    "Name": "rds-db-credentials/image-content-search-rds-secret"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_DATABASE_SECRET/Resource"
+   }
+  },
+  "ICSDATABASE": {
+   "Type": "AWS::RDS::DBCluster",
+   "Properties": {
+    "DatabaseName": "images_labels_lums",
+    "DeletionProtection": false,
+    "EnableHttpEndpoint": true,
+    "Engine": "aurora-mysql",
+    "EngineMode": "serverless",
+    "MasterUserPassword": {
+     "Fn::Join": [
+      "",
+      [
+       "{{resolve:secretsmanager:",
+       {
+        "Ref": "ICSDATABASESECRET3D2C45D3"
+       },
+       ":SecretString:password::}}"
+      ]
+     ]
+    },
+    "MasterUsername": {
+     "Fn::Join": [
+      "",
+      [
+       "{{resolve:secretsmanager:",
+       {
+        "Ref": "ICSDATABASESECRET3D2C45D3"
+       },
+       ":SecretString:username::}}"
+      ]
+     ]
+    },
+    "ScalingConfiguration": {
+     "AutoPause": true,
+     "MaxCapacity": 8,
+     "MinCapacity": 2,
+     "SecondsUntilAutoPause": 1800
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_DATABASE"
+   }
+  },
+  "ICSDATABASESECRETTARGET": {
+   "Type": "AWS::SecretsManager::SecretTargetAttachment",
+   "Properties": {
+    "SecretId": {
+     "Ref": "ICSDATABASESECRET3D2C45D3"
+    },
+    "TargetId": {
+     "Ref": "ICSDATABASE"
+    },
+    "TargetType": "AWS::RDS::DBCluster"
+   },
+   "DependsOn": [
+    "ICSDATABASE"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_DATABASE_SECRET_TARGET"
+   }
+  },
+  "ICSIMAGEDATAFUNCTIONROLE3EBBCABE": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+       ]
+      ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/AmazonRDSDataFullAccess"
+       ]
+      ]
+     }
+    ],
+    "RoleName": "ICS_IMAGE_DATA_FUNCTION_ROLE"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_DATA_FUNCTION_ROLE/Resource"
+   }
+  },
+  "ICSIMAGEDATAFUNCTIONROLEDefaultPolicyEEF135CF": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "translate:TranslateText",
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ICSIMAGEDATAFUNCTIONROLEDefaultPolicyEEF135CF",
+    "Roles": [
+     {
+      "Ref": "ICSIMAGEDATAFUNCTIONROLE3EBBCABE"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_DATA_FUNCTION_ROLE/DefaultPolicy/Resource"
+   }
+  },
+  "ICSIMAGEDATA596A15AA": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-eu-central-1"
+     },
+     "S3Key": "cffb03801e8227848f18e3bcf6c03cc3495e94666de2e49085dc33d3e53e766a.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "DEFAULT_MAX_CALL_ATTEMPTS": "5",
+      "CLUSTER_ARN": {
+       "Fn::Join": [
+        "",
+        [
+         "arn:aws:rds:",
+         {
+          "Ref": "AWS::Region"
+         },
+         ":",
+         {
+          "Ref": "AWS::AccountId"
+         },
+         ":cluster:",
+         {
+          "Ref": "ICSDATABASE"
+         }
+        ]
+       ]
+      },
+      "CREDENTIALS_ARN": {
+       "Ref": "ICSDATABASESECRET3D2C45D3"
+      },
+      "DB_NAME": "images_labels_lums",
+      "REGION": {
+       "Ref": "AWS::Region"
+      }
+     }
+    },
+    "FunctionName": "ICS_IMAGE_DATA",
+    "Handler": "main.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "ICSIMAGEDATAFUNCTIONROLE3EBBCABE",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.10",
+    "Timeout": 5
+   },
+   "DependsOn": [
+    "ICSIMAGEDATAFUNCTIONROLEDefaultPolicyEEF135CF",
+    "ICSIMAGEDATAFUNCTIONROLE3EBBCABE"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_DATA/Resource",
+    "aws:asset:path": "asset.cffb03801e8227848f18e3bcf6c03cc3495e94666de2e49085dc33d3e53e766a",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "ICSAPIGATEWAYIMAGESEARCHAUTHORIZER": {
+   "Type": "AWS::ApiGateway::Authorizer",
+   "Properties": {
+    "IdentitySource": "method.request.header.Authorization",
+    "Name": "ICS_API_GATEWAY_IMAGE_SEARCH_AUTHORIZER",
+    "ProviderARNs": [
+     {
+      "Fn::GetAtt": [
+       "ICSUSERSPOOLF6FBAE92",
+       "Arn"
+      ]
+     }
+    ],
+    "RestApiId": {
+     "Ref": "ICSAPIGATEWAY176EA487"
+    },
+    "Type": "COGNITO_USER_POOLS"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_API_GATEWAY_IMAGE_SEARCH_AUTHORIZER"
+   }
+  },
+  "ICSIMAGEDATAPROVIDERframeworkonEventServiceRole439AFE15": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_DATA_PROVIDER/framework-onEvent/ServiceRole/Resource"
+   }
+  },
+  "ICSIMAGEDATAPROVIDERframeworkonEventServiceRoleDefaultPolicy5372B716": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ICSIMAGEDATA596A15AA",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ICSIMAGEDATA596A15AA",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ICSIMAGEDATAPROVIDERframeworkonEventServiceRoleDefaultPolicy5372B716",
+    "Roles": [
+     {
+      "Ref": "ICSIMAGEDATAPROVIDERframeworkonEventServiceRole439AFE15"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_DATA_PROVIDER/framework-onEvent/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "ICSIMAGEDATAPROVIDERframeworkonEventB178574C": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-eu-central-1"
+     },
+     "S3Key": "3542be390685e0c8353d92ccb5796d343cd93ca946b6b0de798004206a199adc.zip"
+    },
+    "Description": "AWS CDK resource provider framework - onEvent (ImageContentSearch/ICS_IMAGE_DATA_PROVIDER)",
+    "Environment": {
+     "Variables": {
+      "USER_ON_EVENT_FUNCTION_ARN": {
+       "Fn::GetAtt": [
+        "ICSIMAGEDATA596A15AA",
+        "Arn"
+       ]
+      }
+     }
+    },
+    "Handler": "framework.onEvent",
+    "Role": {
+     "Fn::GetAtt": [
+      "ICSIMAGEDATAPROVIDERframeworkonEventServiceRole439AFE15",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs18.x",
+    "Timeout": 900
+   },
+   "DependsOn": [
+    "ICSIMAGEDATAPROVIDERframeworkonEventServiceRoleDefaultPolicy5372B716",
+    "ICSIMAGEDATAPROVIDERframeworkonEventServiceRole439AFE15"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_DATA_PROVIDER/framework-onEvent/Resource",
+    "aws:asset:path": "asset.3542be390685e0c8353d92ccb5796d343cd93ca946b6b0de798004206a199adc",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "ICSIMAGEDATARESOURCE": {
+   "Type": "Custom::SchemaCreation",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "ICSIMAGEDATAPROVIDERframeworkonEventB178574C",
+      "Arn"
+     ]
+    },
+    "source": "Cloudformation"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_DATA_RESOURCE/Default"
+   }
+  },
+  "ICSIMAGECONTENTBUS0FE76B53": {
+   "Type": "AWS::Events::EventBus",
+   "Properties": {
+    "Name": "ImageContentBus"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_CONTENT_BUS/Resource"
+   }
+  },
+  "ICSIMAGECONTENTRULEF1B3B9D7": {
+   "Type": "AWS::Events::Rule",
+   "Properties": {
+    "Description": "The event from image analyzer to store the data",
+    "EventBusName": {
+     "Ref": "ICSIMAGECONTENTBUS0FE76B53"
+    },
+    "EventPattern": {
+     "resources": [
+      {
+       "Fn::GetAtt": [
+        "ICSIMAGEANALYSISA2789013",
+        "Arn"
+       ]
+      }
+     ]
+    },
+    "Name": "ICS_IMAGE_CONTENT_RULE",
+    "State": "ENABLED",
+    "Targets": [
+     {
+      "Arn": {
+       "Fn::GetAtt": [
+        "ICSIMAGEDATA596A15AA",
+        "Arn"
+       ]
+      },
+      "Id": "Target0"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_CONTENT_RULE/Resource"
+   }
+  },
+  "ICSIMAGECONTENTRULEAllowEventRuleImageContentSearchICSIMAGEDATA21B6AC4E9A93198C": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ICSIMAGEDATA596A15AA",
+      "Arn"
+     ]
+    },
+    "Principal": "events.amazonaws.com",
+    "SourceArn": {
+     "Fn::GetAtt": [
+      "ICSIMAGECONTENTRULEF1B3B9D7",
+      "Arn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/ICS_IMAGE_CONTENT_RULE/AllowEventRuleImageContentSearchICSIMAGEDATA21B6AC4E"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/22RTVPjMAyGfwt31yzkstc0LDeGkC7njuqoqaljB0tup+vxf9+xU7pl4aTnleQPvbqXd9VP+eMGjrRQ/X5h9EbGFYPaCzjSOlIl4zKoPbJotvZMc1gCYRIGxk0PMjZb26IfNZF2VjwGqzhDs7UX/nVAyysXvMInmCZth1z+mk2C3knGl4ABc0eBJGDSAzAe4SRjh8T1pHP1CmulXLAsHnAy7jSiLZ++UiuGoVw5Q4dU3s2TXMT5zpmfkHeuz6l/VAfeOa//oE9Cwyhj58x8KsfWGa1OWc6UBFVrIEImWecglBusZifjK6FvnTO5+TtujM6f/pAPbgRtrxvmTBKEyiPTCBYG9DKuii5z/ke/wQ/INTOoXXYkCd+TzCYtGxOI0QvM+yAZy16WgS47ytyF86jBYEqfrLr27znwFFiUebPVedUqELtx7c9tJFvvDrpHL5pS+TifRHvinbO3lby7l9XNG2m98MGyHlF2c/wL1QA587YCAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "ImageContentSearch/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "ICSAPIGATEWAYEndpoint4486A103": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "ICSAPIGATEWAY176EA487"
+      },
+      ".execute-api.eu-central-1.",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "ICSAPIGATEWAYDeploymentStageprodE92AB5E6"
+      },
+      "/"
+     ]
+    ]
+   }
+  },
+  "CognitoHostedUILogin": {
+   "Description": "The Cognito Hosted UI Login Page",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "ICSUSERSPOOLDOMAINFF1CF72E"
+      },
+      ".auth.",
+      {
+       "Ref": "AWS::Region"
+      },
+      ".amazoncognito.com/login?client_id=",
+      {
+       "Ref": "ICSUSERSPOOLAPPCLIENT"
+      },
+      "&response_type=token&scope=phone+email+openid+profile&redirect_uri=https://",
+      {
+       "Ref": "ICSAPIGATEWAY176EA487"
+      },
+      ".execute-api.eu-central-1.",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "ICSAPIGATEWAYDeploymentStageprodE92AB5E6"
+      },
+      "/web"
+     ]
+    ]
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

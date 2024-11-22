@@ -1,0 +1,425 @@
+{
+  "version": "36.0.0",
+  "artifacts": {
+    "ImageContentSearch.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "ImageContentSearch.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "ImageContentSearch": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/eu-central-1",
+      "properties": {
+        "templateFile": "ImageContentSearch.template.json",
+        "terminationProtection": false,
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-eu-central-1",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-eu-central-1",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-eu-central-1/8267038edbf9ac186e83dbcf44d570580b350eb5b0838a88d038cb3f2d7c9f58.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "ImageContentSearch.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-eu-central-1",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "ImageContentSearch.assets"
+      ],
+      "metadata": {
+        "/ImageContentSearch/ICS_IMAGES/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGES9B323B5B"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGES/Notifications/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGESNotifications3D771EB9"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGES/AllowBucketNotificationsToImageContentSearchICSIMAGEMASSAGE0E61A1DA": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGESAllowBucketNotificationsToImageContentSearchICSIMAGEMASSAGE0E61A1DAD55D2049"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGES_DEADLETTER_QUEUE/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGESDEADLETTERQUEUE5A772CBE"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGES_QUEUE/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGESQUEUED36467EC"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAY176EA487"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/CloudWatchRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYCloudWatchRoleFF4E4DEC"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Account": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYAccountF7F23D9A"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Deployment/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYDeploymentB02CC6EFad87a1d8e1bd42525c1ac05cfbe447a1"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/DeploymentStage.prod/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYDeploymentStageprodE92AB5E6"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Endpoint": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYEndpoint4486A103"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/web/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYweb41710FF5"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/web/GET/ApiPermission.ImageContentSearchICSAPIGATEWAY49425188.GET..web": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYwebGETApiPermissionImageContentSearchICSAPIGATEWAY49425188GETweb5E56DA09"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/web/GET/ApiPermission.Test.ImageContentSearchICSAPIGATEWAY49425188.GET..web": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYwebGETApiPermissionTestImageContentSearchICSAPIGATEWAY49425188GETwebC4D89A6E"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/web/GET/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYwebGET74450C32"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/web/OPTIONS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYwebOPTIONSDB67D316"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/signedUrl/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYsignedUrlB7F567EE"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/signedUrl/GET/ApiPermission.ImageContentSearchICSAPIGATEWAY49425188.GET..signedUrl": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYsignedUrlGETApiPermissionImageContentSearchICSAPIGATEWAY49425188GETsignedUrl3155CCCC"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/signedUrl/GET/ApiPermission.Test.ImageContentSearchICSAPIGATEWAY49425188.GET..signedUrl": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYsignedUrlGETApiPermissionTestImageContentSearchICSAPIGATEWAY49425188GETsignedUrl0C5D261F"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/signedUrl/GET/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYsignedUrlGETCFF30045"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/signedUrl/OPTIONS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYsignedUrlOPTIONS6E3F44FF"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/search/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYsearchFB1E1A5C"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/search/OPTIONS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYsearchOPTIONS5EBC9226"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/search/POST/ApiPermission.ImageContentSearchICSAPIGATEWAY49425188.POST..search": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYsearchPOSTApiPermissionImageContentSearchICSAPIGATEWAY49425188POSTsearchDDB1A34A"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/search/POST/ApiPermission.Test.ImageContentSearchICSAPIGATEWAY49425188.POST..search": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYsearchPOSTApiPermissionTestImageContentSearchICSAPIGATEWAY49425188POSTsearch4713DB00"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY/Default/search/POST/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYsearchPOST8A027558"
+          }
+        ],
+        "/ImageContentSearch/ICS_GET_LANDING_PAGE/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSGETLANDINGPAGEServiceRole59182AB9"
+          }
+        ],
+        "/ImageContentSearch/ICS_GET_LANDING_PAGE/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSGETLANDINGPAGE9074A05D"
+          }
+        ],
+        "/ImageContentSearch/ICS_USERS_POOL/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSUSERSPOOLF6FBAE92"
+          }
+        ],
+        "/ImageContentSearch/ICS_USERS_POOL_APP_CLIENT": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSUSERSPOOLAPPCLIENT"
+          }
+        ],
+        "/ImageContentSearch/ICS_USERS_POOL_DOMAIN/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSUSERSPOOLDOMAINFF1CF72E"
+          }
+        ],
+        "/ImageContentSearch/ICS_GET_SIGNED_URL/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSGETSIGNEDURLServiceRole6B36B087"
+          }
+        ],
+        "/ImageContentSearch/ICS_GET_SIGNED_URL/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSGETSIGNEDURLServiceRoleDefaultPolicy50E388DB"
+          }
+        ],
+        "/ImageContentSearch/ICS_GET_SIGNED_URL/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSGETSIGNEDURL35AB5BD9"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY_GET_SIGNED_URL_AUTHORIZER": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYGETSIGNEDURLAUTHORIZER"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_MASSAGE/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGEMASSAGEServiceRole82275B10"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_MASSAGE/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGEMASSAGEServiceRoleDefaultPolicyBC04A45A"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_MASSAGE/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGEMASSAGEC938CD01"
+          }
+        ],
+        "/ImageContentSearch/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC"
+          }
+        ],
+        "/ImageContentSearch/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36"
+          }
+        ],
+        "/ImageContentSearch/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BucketNotificationsHandler050a0587b7544547bf325f094a3db8347ECC3691"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_ANALYSIS/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGEANALYSISServiceRole00046CC6"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_ANALYSIS/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGEANALYSISServiceRoleDefaultPolicy2BDD9404"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_ANALYSIS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGEANALYSISA2789013"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_ANALYSIS/SqsEventSource:ImageContentSearchICSIMAGESQUEUE426445B0/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGEANALYSISSqsEventSourceImageContentSearchICSIMAGESQUEUE426445B0D0602E5C"
+          }
+        ],
+        "/ImageContentSearch/ICS_DATABASE_SECRET/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSDATABASESECRET3D2C45D3"
+          }
+        ],
+        "/ImageContentSearch/ICS_DATABASE": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSDATABASE"
+          }
+        ],
+        "/ImageContentSearch/ICS_DATABASE_SECRET_TARGET": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSDATABASESECRETTARGET"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_DATA_FUNCTION_ROLE/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGEDATAFUNCTIONROLE3EBBCABE"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_DATA_FUNCTION_ROLE/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGEDATAFUNCTIONROLEDefaultPolicyEEF135CF"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_DATA/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGEDATA596A15AA"
+          }
+        ],
+        "/ImageContentSearch/ICS_API_GATEWAY_IMAGE_SEARCH_AUTHORIZER": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSAPIGATEWAYIMAGESEARCHAUTHORIZER"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_DATA_PROVIDER/framework-onEvent/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGEDATAPROVIDERframeworkonEventServiceRole439AFE15"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_DATA_PROVIDER/framework-onEvent/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGEDATAPROVIDERframeworkonEventServiceRoleDefaultPolicy5372B716"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_DATA_PROVIDER/framework-onEvent/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGEDATAPROVIDERframeworkonEventB178574C"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_DATA_RESOURCE/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGEDATARESOURCE"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_CONTENT_BUS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGECONTENTBUS0FE76B53"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_CONTENT_RULE/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGECONTENTRULEF1B3B9D7"
+          }
+        ],
+        "/ImageContentSearch/ICS_IMAGE_CONTENT_RULE/AllowEventRuleImageContentSearchICSIMAGEDATA21B6AC4E": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ICSIMAGECONTENTRULEAllowEventRuleImageContentSearchICSIMAGEDATA21B6AC4E9A93198C"
+          }
+        ],
+        "/ImageContentSearch/CognitoHostedUILogin": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CognitoHostedUILogin"
+          }
+        ],
+        "/ImageContentSearch/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/ImageContentSearch/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/ImageContentSearch/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "ImageContentSearch"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}
