@@ -24,6 +24,16 @@ variable "source_code_hash" {
   type        = string
 }
 
+variable "images_bucket" {
+  description = "S3 bucket where images will be uploaded"
+  type        = string
+}
+
+variable "event_bus" {
+  description = "Cloudwatch event bus for EventBridge."
+  type        = string
+}
+
 variable "region" {
   description = "AWS region"
   type        = string

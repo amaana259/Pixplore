@@ -19,6 +19,11 @@ variable "filename" {
   type        = string
 }
 
+variable "region" {
+  description = "AWS region"
+  type        = string
+}
+
 variable "source_code_hash" {
   description = "Base64-encoded SHA256 hash of the deployment package"
   type        = string

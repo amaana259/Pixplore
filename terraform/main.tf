@@ -33,6 +33,21 @@ module "upload_photo_lambda" {
   default_signedurl_expiry_seconds = "3600"
 }
 
+# EventBridge
+module "eventbridge" {
+  source               = "./modules/eventbridge"
+  event_bus_name       = "ImageContentBus"
+  event_rule_name      = "Pixplore-ImageRule"
+  event_rule_description = "The event from image analyzer to store the data"
+  event_pattern        = jsonencode({
+    resources = [
+      module.image_analysis_lambda.lambda_arn
+    ]
+  })
+  target_lambda_arn    = module.image_metadata_lambda.lambda_arn
+  target_lambda_name   = module.image_metadata_lambda.lambda_name
+}
+
 module "image_analysis_lambda" {
   source                         = "./modules/lambda/image-analyse"
   function_name                  = "Image_Analysis_Lambda"
@@ -41,15 +56,18 @@ module "image_analysis_lambda" {
   filename                       = "${path.module}/modules/lambda/image-analyse/imageAnalysis.zip"
   source_code_hash               = filebase64sha256("${path.module}/modules/lambda/image-analyse/imageAnalysis.zip")
   region                         = "us-east-1"
+  images_bucket                  = "Pixplore-S3"
+  event_bus                      = module.eventbridge.event_bus_name
   default_max_call_attempts      = "3"
 }
 
-module "image_massage_lambda" {
-  source                         = "./modules/lambda/image-massage"
-  function_name                  = "Image_Massage_Lambda"
+module "image_queue_lambda" {
+  source                         = "./modules/lambda/image-queue"
+  function_name                  = "Image_Queue_Lambda"
   runtime                        = "python3.10"
   handler                        = "main.handler"
-  filename                       = "${path.module}/modules/lambda/image-massage/imageMassage.zip"
-  source_code_hash               = filebase64sha256("${path.module}/modules/lambda/image-massage/imageMassage.zip")
+  region                         = "us-east-1"
+  filename                       = "${path.module}/modules/lambda/image-queue/imageQueue.zip"
+  source_code_hash               = filebase64sha256("${path.module}/modules/lambda/image-queue/imageQueue.zip")
   queue_name                     = "Pixplore-SQS"
 }

@@ -56,8 +56,10 @@ resource "aws_lambda_function" "this" {
 
   environment {
     variables = {
+      IMAGES_BUCKET             = var.images_bucket
       REGION                    = var.region
       DEFAULT_MAX_CALL_ATTEMPTS = var.default_max_call_attempts
+      EVENT_BUS                 = var.event_bus
     }
   }
 }

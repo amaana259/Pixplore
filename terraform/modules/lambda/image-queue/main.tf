@@ -1,5 +1,5 @@
 resource "aws_iam_role" "lambda_execution_role" {
-  name = "image_massage_lambda_execution_role"
+  name = "image_queue_lambda_execution_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -16,7 +16,7 @@ resource "aws_iam_role" "lambda_execution_role" {
 }
 
 resource "aws_iam_policy" "s3_sqs_access_policy" {
-  name = "image_massage_s3_sqs_access_policy"
+  name = "image_queue_s3_sqs_access_policy"
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -28,21 +28,21 @@ resource "aws_iam_policy" "s3_sqs_access_policy" {
           "s3:PutObject",
           "s3:DeleteObject"
         ],
-        Resource = "arn:aws:s3:::your-bucket-name/*"
+        Resource = "arn:aws:s3:::Pixplore-S3/*"
       },
       {
         Effect = "Allow",
         Action = [
           "sqs:SendMessage"
         ],
-        Resource = "arn:aws:sqs:your-region:your-account-id:${var.queue_name}"
+        Resource = "arn:aws:sqs:${var.region}:your-account-id:${var.queue_name}"
       }
     ]
   })
 }
 
 resource "aws_iam_policy_attachment" "s3_sqs_policy_attachment" {
-  name       = "image_massage_s3_sqs_policy_attachment"
+  name       = "image_queue_s3_sqs_policy_attachment"
   roles      = [aws_iam_role.lambda_execution_role.name]
   policy_arn = aws_iam_policy.s3_sqs_access_policy.arn
 }
