@@ -29,7 +29,7 @@ module "upload_photo_lambda" {
   handler                        = "main.handler"
   filename                       = "${path.module}/modules/lambda/upload-photo/getSignedUrl.zip"
   source_code_hash               = filebase64sha256("${path.module}/modules/lambda/upload-photo/getSignedUrl.zip")
-  images_bucket                  = "Pixplore-S3"
+  images_bucket                  = "pixplore-s3"
   default_signedurl_expiry_seconds = "3600"
 }
 
@@ -45,7 +45,7 @@ module "image_analysis_lambda" {
   filename                       = "${path.module}/modules/lambda/image-analyse/imageAnalysis.zip"
   source_code_hash               = filebase64sha256("${path.module}/modules/lambda/image-analyse/imageAnalysis.zip")
   region                         = "us-east-1"
-  images_bucket                  = "Pixplore-S3"
+  images_bucket                  = "pixplore-s3"
   event_bus                      = aws_cloudwatch_event_bus.image_content_bus.name
   default_max_call_attempts      = "3"
 }
@@ -55,7 +55,7 @@ module "image_analysis_lambda" {
 module "eventbridge" {
   source               = "./modules/eventbridge"
   event_bus_name       = "ImageContentBus"
-  event_rule_name      = "Pixplore-ImageRule"
+  event_rule_name      = "pixplore-imagerule"
   event_rule_description = "The event from image analyzer to store the data"
   event_pattern        = jsonencode({
     resources = [
@@ -75,5 +75,5 @@ module "image_queue_lambda" {
   region                         = "us-east-1"
   filename                       = "${path.module}/modules/lambda/image-queue/imageQueue.zip"
   source_code_hash               = filebase64sha256("${path.module}/modules/lambda/image-queue/imageQueue.zip")
-  queue_name                     = "Pixplore-SQS"
+  queue_name                     = "pixplore-sqs"
 }
