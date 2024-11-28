@@ -46,6 +46,8 @@ module "eventbridge" {
   })
   target_lambda_arn    = module.image_metadata_lambda.lambda_arn
   target_lambda_name   = module.image_metadata_lambda.lambda_name
+
+  depends_on = [module.image_analysis_lambda]
 }
 
 module "image_analysis_lambda" {
