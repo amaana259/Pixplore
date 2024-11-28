@@ -33,6 +33,24 @@ module "upload_photo_lambda" {
   default_signedurl_expiry_seconds = "3600"
 }
 
+resource "aws_cloudwatch_event_bus" "image_content_bus" {
+  name = "ImageContentBus"
+}
+
+module "image_analysis_lambda" {
+  source                         = "./modules/lambda/image-analyse"
+  function_name                  = "Image_Analysis_Lambda"
+  runtime                        = "python3.10"
+  handler                        = "main.handler"
+  filename                       = "${path.module}/modules/lambda/image-analyse/imageAnalysis.zip"
+  source_code_hash               = filebase64sha256("${path.module}/modules/lambda/image-analyse/imageAnalysis.zip")
+  region                         = "us-east-1"
+  images_bucket                  = "Pixplore-S3"
+  event_bus                      = aws_cloudwatch_event_bus.image_content_bus.name
+  default_max_call_attempts      = "3"
+}
+
+
 # EventBridge
 module "eventbridge" {
   source               = "./modules/eventbridge"
@@ -47,20 +65,6 @@ module "eventbridge" {
   target_lambda_arn    = module.image_metadata_lambda.lambda_arn
   target_lambda_name   = module.image_metadata_lambda.lambda_name
 
-  depends_on = [module.image_analysis_lambda]
-}
-
-module "image_analysis_lambda" {
-  source                         = "./modules/lambda/image-analyse"
-  function_name                  = "Image_Analysis_Lambda"
-  runtime                        = "python3.10"
-  handler                        = "main.handler"
-  filename                       = "${path.module}/modules/lambda/image-analyse/imageAnalysis.zip"
-  source_code_hash               = filebase64sha256("${path.module}/modules/lambda/image-analyse/imageAnalysis.zip")
-  region                         = "us-east-1"
-  images_bucket                  = "Pixplore-S3"
-  event_bus                      = module.eventbridge.event_bus_name
-  default_max_call_attempts      = "3"
 }
 
 module "image_queue_lambda" {
